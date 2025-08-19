@@ -52,7 +52,7 @@ class Project:
 class Editor:
     name: str
     icon: Path
-    config_dir_prefix: str
+    config_dir_prefixes: list[str]
     binary: str
 
     # Rider calls recentProjects.xml -> recentSolutions.xml and in it RecentProjectsManager -> RiderRecentProjectsManager
@@ -62,12 +62,12 @@ class Editor:
             self,
             name: str,
             icon: Path,
-            config_dir_prefix: str,
+            config_dir_prefixes: list[str],
             binaries: list[str],
             is_rider = False):
         self.name = name
         self.icon = icon
-        self.config_dir_prefix = config_dir_prefix
+        self.config_dir_prefixes = config_dir_prefixes
         self.binary = self._find_binary(binaries)
         self.is_rider = is_rider
 
@@ -83,15 +83,20 @@ class Editor:
         if platform == "darwin":
             config_dir = Path.home() / "Library" / "Application Support"
 
-        dirs = list(config_dir.glob(f"{self.config_dir_prefix}*/"))
-        if not dirs:
-            return []
-        latest = sorted(dirs)[-1]
-        if not self.is_rider:
-            recent_projects_xml = "recentProjects.xml"
-        else:
-            recent_projects_xml = "recentSolutions.xml"
-        return self._parse_recent_projects(Path(latest) / "options" / recent_projects_xml)
+        for config_dir_prefix in self.config_dir_prefixes:
+            dirs = list(config_dir.glob(f"{config_dir_prefix}*/"))
+            if dirs:
+                latest_config_dir = sorted(dirs)[-1]
+
+                if not self.is_rider:
+                    recent_projects_xml = "recentProjects.xml"
+                else:
+                    recent_projects_xml = "recentSolutions.xml"
+
+                recent_project_path = Path(latest_config_dir) / "options" / recent_projects_xml
+                return self._parse_recent_projects(recent_project_path)
+
+        return []
 
     def _parse_recent_projects(self, recent_projects_file: Path) -> list[Project]:
         try:
@@ -143,76 +148,76 @@ class Plugin(PluginInstance, TriggerQueryHandler):
             Editor(
                 name="Android Studio",
                 icon=plugin_dir / "icons" / "androidstudio.svg",
-                config_dir_prefix="Google/AndroidStudio",
+                config_dir_prefixes=["Google/AndroidStudio"],
                 binaries=["studio", "androidstudio", "android-studio", "android-studio-canary", "jdk-android-studio",
                           "android-studio-system-jdk"]),
             Editor(
                 name="Aqua",
                 icon=plugin_dir / "icons" / "aqua.svg",
-                config_dir_prefix="JetBrains/Aqua",
+                config_dir_prefixes=["JetBrains/Aqua"],
                 binaries=["aqua", "aqua-eap"]),
             Editor(
                 name="CLion",
                 icon=plugin_dir / "icons" / "clion.svg",
-                config_dir_prefix="JetBrains/CLion",
+                config_dir_prefixes=["JetBrains/CLion"],
                 binaries=["clion", "clion-eap"]),
             Editor(
                 name="DataGrip",
                 icon=plugin_dir / "icons" / "datagrip.svg",
-                config_dir_prefix="JetBrains/DataGrip",
+                config_dir_prefixes=["JetBrains/DataGrip"],
                 binaries=["datagrip", "datagrip-eap"]),
             Editor(
                 name="DataSpell",
                 icon=plugin_dir / "icons" / "dataspell.svg",
-                config_dir_prefix="JetBrains/DataSpell",
+                config_dir_prefixes=["JetBrains/DataSpell"],
                 binaries=["dataspell", "dataspell-eap"]),
             Editor(
                 name="GoLand",
                 icon=plugin_dir / "icons" / "goland.svg",
-                config_dir_prefix="JetBrains/GoLand",
+                config_dir_prefixes=["JetBrains/GoLand"],
                 binaries=["goland", "goland-eap"]),
             Editor(
                 name="IntelliJ IDEA",
                 icon=plugin_dir / "icons" / "idea.svg",
-                config_dir_prefix="JetBrains/IntelliJIdea",
+                config_dir_prefixes=["JetBrains/IntelliJIdea", "JetBrains/Idea"],
                 binaries=["idea", "idea.sh", "idea-ultimate", "idea-ce-eap", "idea-ue-eap", "intellij-idea-ce",
                           "intellij-idea-ce-eap", "intellij-idea-ue-bundled-jre", "intellij-idea-ultimate-edition",
                           "intellij-idea-community-edition-jre", "intellij-idea-community-edition-no-jre"]),
             Editor(
                 name="PhpStorm",
                 icon=plugin_dir / "icons" / "phpstorm.svg",
-                config_dir_prefix="JetBrains/PhpStorm",
+                config_dir_prefixes=["JetBrains/PhpStorm"],
                 binaries=["phpstorm", "phpstorm-eap"]),
             Editor(
                 name="PyCharm",
                 icon=plugin_dir / "icons" / "pycharm.svg",
-                config_dir_prefix="JetBrains/PyCharm",
+                config_dir_prefixes=["JetBrains/PyCharm"],
                 binaries=["charm", "pycharm", "pycharm-eap", "pycharm-professional"]),
             Editor(
                 name="Rider",
                 icon=plugin_dir / "icons" / "rider.svg",
-                config_dir_prefix="JetBrains/Rider",
+                config_dir_prefixes=["JetBrains/Rider"],
                 binaries=["rider", "rider-eap"],
                 is_rider=True),
             Editor(
                 name="RubyMine",
                 icon=plugin_dir / "icons" / "rubymine.svg",
-                config_dir_prefix="JetBrains/RubyMine",
+                config_dir_prefixes=["JetBrains/RubyMine"],
                 binaries=["rubymine", "rubymine-eap", "jetbrains-rubymine", "jetbrains-rubymine-eap"]),
             Editor(
                 name="RustRover",
                 icon=plugin_dir / "icons" / "rustrover.svg",
-                config_dir_prefix="JetBrains/RustRover",
+                config_dir_prefixes=["JetBrains/RustRover"],
                 binaries=["rustrover", "rustrover-eap"]),
             Editor(
                 name="WebStorm",
                 icon=plugin_dir / "icons" / "webstorm.svg",
-                config_dir_prefix="JetBrains/WebStorm",
+                config_dir_prefixes=["JetBrains/WebStorm"],
                 binaries=["webstorm", "webstorm-eap"]),
             Editor(
                 name="Writerside",
                 icon=plugin_dir / "icons" / "writerside.svg",
-                config_dir_prefix="JetBrains/Writerside",
+                config_dir_prefixes=["JetBrains/Writerside"],
                 binaries=["writerside", "writerside-eap"]),
         ]
         self.editors = [e for e in editors if e.binary is not None]

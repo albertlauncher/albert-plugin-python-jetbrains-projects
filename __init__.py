@@ -93,8 +93,11 @@ class Editor:
                 else:
                     recent_projects_xml = "recentSolutions.xml"
 
-                recent_project_path = Path(latest_config_dir) / "options" / recent_projects_xml
-                return self._parse_recent_projects(recent_project_path)
+                recent_project_file = Path(latest_config_dir) / "options" / recent_projects_xml
+                if recent_project_file.exists():
+                    projects = self._parse_recent_projects(recent_project_file)
+                    if projects:
+                        return projects
 
         return []
 

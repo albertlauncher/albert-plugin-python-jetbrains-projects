@@ -83,15 +83,15 @@ class Editor:
         if platform == "darwin":
             config_dir = Path.home() / "Library" / "Application Support"
 
+        if not self.is_rider:
+            recent_projects_xml = "recentProjects.xml"
+        else:
+            recent_projects_xml = "recentSolutions.xml"
+
         for config_dir_prefix in self.config_dir_prefixes:
             dirs = list(config_dir.glob(f"{config_dir_prefix}*/"))
             if dirs:
                 latest_config_dir = sorted(dirs)[-1]
-
-                if not self.is_rider:
-                    recent_projects_xml = "recentProjects.xml"
-                else:
-                    recent_projects_xml = "recentSolutions.xml"
 
                 recent_project_file = Path(latest_config_dir) / "options" / recent_projects_xml
                 if recent_project_file.exists():

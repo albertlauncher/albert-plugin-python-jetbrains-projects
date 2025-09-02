@@ -20,8 +20,18 @@ This plugin allows you to quickly open projects of the Jetbrains IDEs
 - WebStorm
 - Writerside.
 
-Note that for this plugin to find the IDEs, a commandline launcher in $PATH is required.
-Open the IDE and click Tools -> Create Command-line Launcher to add one.
+Notes:
+
+- The plugin only lists projects that still exist on disk.
+- The projects are sorted by last opened.
+- You can enable fuzzy matching in the plugin settings.
+- You can choose to match the project path in addition to the project name in the plugin settings
+- For this plugin to find the IDEs, a commandline launcher in $PATH is required.
+  Open the IDE and click Tools -> Create Command-line Launcher to add one.
+- The plugin reads the recent projects from the configuration directory of the IDEs.
+  On Linux, this is usually ~/.config/JetBrains/<product><version>.
+  On macOS, this is usually ~/Library/Application Support/JetBrains/<product><version>.
+  If you have a custom config directory, the best solution is to create a symlink in the default location.
 """
 
 from dataclasses import dataclass

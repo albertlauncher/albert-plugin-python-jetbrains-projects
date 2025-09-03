@@ -33,7 +33,7 @@ Notes:
   On macOS, this is usually ~/Library/Application Support/JetBrains/<product><version>.
   If you have a custom config directory, the best solution is to create a symlink in the default location.
 """
-
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union, List
@@ -84,10 +84,22 @@ class Editor:
 
     @staticmethod
     def _find_binary(binaries: list[str]) -> Union[str, None]:
+        os_path = os.environ.get("PATH", "")
+
+        # Add additional paths for macOS
+        if platform == "darwin":
+            home_dir = os.path.expanduser('~')
+            os_path += os.pathsep + os.pathsep.join([
+                f"{home_dir}/.local/bin",
+                f"{home_dir}/Library/Application Support/JetBrains/Toolbox/scripts",
+            ])
+
         for binary in binaries:
-            if which(binary):
+            if which(binary, path=os_path):
                 return binary
+
         return None
+
 
     def list_projects(self) -> List[Project]:
         config_dir = Path.home() / ".config"

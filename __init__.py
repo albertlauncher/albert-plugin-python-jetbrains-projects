@@ -11,7 +11,7 @@ from sys import platform
 from xml.etree import ElementTree
 from albert import *
 
-md_iid = "4.0"
+md_iid = "5.0"
 md_version = "4.3.0"
 md_name = "Jetbrains projects"
 md_description = "Open your JetBrains projects"
@@ -113,13 +113,13 @@ class Editor:
             return []
 
 
-class Plugin(PluginInstance, TriggerQueryHandler):
+class Plugin(PluginInstance, GeneratorQueryHandler):
 
     executables = []
 
     def __init__(self):
         PluginInstance.__init__(self)
-        TriggerQueryHandler.__init__(self)
+        GeneratorQueryHandler.__init__(self)
 
         self.fuzzy = False
 
@@ -224,10 +224,10 @@ class Plugin(PluginInstance, TriggerQueryHandler):
     def defaultTrigger(self):
         return "jb "
 
-    def handleTriggerQuery(self, query: Query):
+    def items(self, ctx):
         editor_project_pairs = []
 
-        m = Matcher(query.string, MatchConfig(fuzzy=self.fuzzy))
+        m = Matcher(ctx.query, MatchConfig(fuzzy=self.fuzzy))
 
         for editor in self.editors:
             for project in editor.list_projects():
@@ -242,7 +242,7 @@ class Plugin(PluginInstance, TriggerQueryHandler):
         # sort by last opened
         editor_project_pairs.sort(key=lambda pair: pair[1].last_opened, reverse=True)
 
-        query.add([self._make_item(editor, project) for editor, project in editor_project_pairs])
+        yield [self._make_item(editor, project) for editor, project in editor_project_pairs]
 
     @staticmethod
     def _make_item(editor: Editor, project: Project) -> Item:

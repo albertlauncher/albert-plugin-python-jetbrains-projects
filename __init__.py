@@ -251,7 +251,7 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
             text=project.name,
             subtext=project.path,
             input_action_text=project.name,
-            icon_factory=lambda: makeImageIcon(str(editor.icon)),
+            icon_factory=lambda: Icon.image(str(editor.icon)),
             actions=[
                 Action(
                     "Open",

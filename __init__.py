@@ -12,7 +12,7 @@ from xml.etree import ElementTree
 from albert import *
 
 md_iid = "5.0"
-md_version = "4.3.0"
+md_version = "4.3.1"
 md_name = "Jetbrains projects"
 md_description = "Open your JetBrains projects"
 md_license = "MIT"

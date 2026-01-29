@@ -181,21 +181,19 @@ class Rider(JetBrainsIde):
         return root.findall(".//component[@name='RiderRecentProjectsManager']//entry[@key]")
 
 
-class Plugin(PluginInstance, GeneratorQueryHandler):
+class Plugin(PluginInstance, GlobalQueryHandler):
 
     executables = []
 
     def __init__(self):
         PluginInstance.__init__(self)
-        GeneratorQueryHandler.__init__(self)
-
-        self.fuzzy = False
-
+        GlobalQueryHandler.__init__(self)
         self._match_path = self.readConfig('match_path', bool)
         if self._match_path is None:
             self._match_path = False
-
+        self.fuzzy = False
         self.editors = JetBrainsIde.get_editors(Path(__file__).parent / "icons")
+        self.projects = self._get_projects()
 
     @property
     def match_path(self):
@@ -224,11 +222,11 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
         ]
 
     def items(self, ctx):
-        editor_project_pairs = []
+        self.projects = self._get_projects()
 
         matcher = Matcher(ctx.query, MatchConfig(fuzzy=self.fuzzy))
         matches = [
-            project for project in self._get_projects()
+            project for project in self.projects
             if matcher.match(*[project.name, project.path] if self._match_path else [project.name])
         ]
 
@@ -237,23 +235,29 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
 
         yield [self._make_item(project) for project in matches]
 
+    def rankItems(self, ctx):
+        matcher = Matcher(ctx.query, MatchConfig(fuzzy=self.fuzzy))
+        return [
+            RankItem(self._make_item(project, show_cat=True), m)
+            for project in self.projects
+            if (m := matcher.match(project.name))
+        ]
+
     @staticmethod
-    def _make_item(editor: Editor, project: Project) -> Item:
+    def _make_item(project: Project, show_cat: bool = False) -> Item:
         return StandardItem(
-            id="%s-%s-%s" % (editor.binary, project.path, project.last_opened),
+            id=project.path,
             text=project.name,
-            subtext=project.path,
+            subtext=f"{project.ide.name} · {project.path}" if show_cat else project.path,
             input_action_text=project.name,
-            icon_factory=lambda: Icon.image(str(editor.icon)),
+            icon_factory=lambda: Icon.image(str(project.ide.icon)),
             actions=[
                 Action(
                     "Open",
-                    "Open in %s" % editor.name,
-                    lambda selected_project=project.path: runDetachedProcess(
-                        [editor.binary, selected_project]
-                    ),
+                    "Open in %s" % project.ide.name,
+                    lambda p=project: runDetachedProcess([project.ide.binary, project.path])
                 )
-            ],
+            ]
         )
 
     def configWidget(self):
@@ -261,6 +265,6 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
             {
                 'type': 'checkbox',
                 'property': 'match_path',
-                'label': 'Match path'
+                'label': 'Match path in triggered queries'
             }
         ]

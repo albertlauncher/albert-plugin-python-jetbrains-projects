@@ -27,30 +27,20 @@ class Project:
     name: str
     path: str
     last_opened: int
+    ide: JetBrainsIde
 
 
-@dataclass
-class Editor:
+class JetBrainsIde:
     name: str
     icon: Path
     config_dir_prefixes: list[str]
     binary: str
 
-    # Rider calls recentProjects.xml -> recentSolutions.xml and in it RecentProjectsManager -> RiderRecentProjectsManager
-    is_rider: bool
-
-    def __init__(
-            self,
-            name: str,
-            icon: Path,
-            config_dir_prefixes: list[str],
-            binaries: list[str],
-            is_rider = False):
+    def __init__(self, name: str, icon: Path, config_dir_prefixes: list[str], binaries: list[str]):
         self.name = name
         self.icon = icon
         self.config_dir_prefixes = config_dir_prefixes
         self.binary = self._find_binary(binaries)
-        self.is_rider = is_rider
 
     @staticmethod
     def _find_binary(binaries: list[str]) -> Union[str, None]:
@@ -59,138 +49,136 @@ class Editor:
                 return binary
         return None
 
-    def list_projects(self) -> List[Project]:
-        config_dir = Path.home() / ".config"
+    @staticmethod
+    def _config_dir() -> Path:
         if platform == "darwin":
-            config_dir = Path.home() / "Library" / "Application Support"
-
-        if not self.is_rider:
-            recent_projects_xml = "recentProjects.xml"
+            return Path.home() / "Library" / "Application Support"
         else:
-            recent_projects_xml = "recentSolutions.xml"
+            return Path.home() / ".config"
 
+    def _get_recent_projects_entries(self, config_dir: Path) -> list[ElementTree.Element]:
+        recent_projects_file = Path(config_dir) / "options" / "recentProjects.xml"
+        root = ElementTree.parse(recent_projects_file).getroot()
+        return root.findall(".//component[@name='RecentProjectsManager']//entry[@key]")
+
+    def _parse_project_entries(self, project_entries: list[ElementTree.Element]) -> list[Project]:
+        projects = []
+        for entry in project_entries:
+            project_path = entry.attrib["key"]
+            project_path = project_path.replace("$USER_HOME$", str(Path.home()))
+            project_name = Path(project_path).name
+            files = Path(project_path + "/.idea").glob("*.iml")
+            tag_opened = entry.find(".//option[@name='projectOpenTimestamp']")
+            last_opened = tag_opened.attrib["value"] if tag_opened is not None and "value" in tag_opened.attrib else None
+
+            if project_path and last_opened:
+                projects.append(Project(name=project_name, path=project_path, last_opened=int(last_opened), ide=self))
+            for file in files:
+                name = file.name.replace(".iml", "")
+                if name != project_name:
+                    projects.append(Project(name=name, path=project_path, last_opened=int(last_opened), ide=self))
+
+        return projects
+
+    def list_projects(self) -> List[Project]:
         for config_dir_prefix in self.config_dir_prefixes:
-            dirs = list(config_dir.glob(f"{config_dir_prefix}*/"))
+            dirs = list(self._config_dir().glob(f"{config_dir_prefix}*/"))
             if dirs:
-                latest_config_dir = sorted(dirs)[-1]
-
-                recent_project_file = Path(latest_config_dir) / "options" / recent_projects_xml
-                if recent_project_file.exists():
-                    projects = self._parse_recent_projects(recent_project_file)
-                    if projects:
-                        return projects
-
+                try:
+                    recent_projects_entries = self._get_recent_projects_entries(sorted(dirs)[-1])
+                    return self._parse_project_entries(recent_projects_entries)
+                except (ElementTree.ParseError, FileNotFoundError):
+                    return []
         return []
 
-    def _parse_recent_projects(self, recent_projects_file: Path) -> list[Project]:
-        try:
-            root = ElementTree.parse(recent_projects_file).getroot()
-            if not self.is_rider:
-                entries = root.findall(".//component[@name='RecentProjectsManager']//entry[@key]")
-            else:
-                entries = root.findall(".//component[@name='RiderRecentProjectsManager']//entry[@key]")
-
-            projects = []
-            for entry in entries:
-                project_path = entry.attrib["key"]
-                project_path = project_path.replace("$USER_HOME$", str(Path.home()))
-                project_name = Path(project_path).name
-                files = Path(project_path + "/.idea").glob("*.iml")
-                tag_opened = entry.find(".//option[@name='projectOpenTimestamp']")
-                last_opened = tag_opened.attrib["value"] if tag_opened is not None and "value" in tag_opened.attrib else None
-
-                if project_path and last_opened:
-                    projects.append(
-                        Project(name=project_name, path=project_path, last_opened=int(last_opened))
-                    )
-                for file in files:
-                    name = file.name.replace(".iml", "")
-                    if name != project_name:
-                        projects.append(Project(name=name, path=project_path, last_opened=int(last_opened)))
-
-            return projects
-        except (ElementTree.ParseError, FileNotFoundError):
-            return []
-
     @staticmethod
-    def get_editors(icons_dir: Path) -> List[Editor]:
+    def get_editors(icons_dir: Path) -> List[JetBrainsIde]:
         editors = [
-            Editor(
+            JetBrainsIde(
                 name="Android Studio",
                 icon=icons_dir / "androidstudio.svg",
                 config_dir_prefixes=["Google/AndroidStudio"],
                 binaries=["studio", "androidstudio", "android-studio", "android-studio-canary", "jdk-android-studio",
                           "android-studio-system-jdk"]),
-            Editor(
+            JetBrainsIde(
                 name="Aqua",
                 icon=icons_dir / "aqua.svg",
                 config_dir_prefixes=["JetBrains/Aqua"],
                 binaries=["aqua", "aqua-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="CLion",
                 icon=icons_dir / "clion.svg",
                 config_dir_prefixes=["JetBrains/CLion"],
                 binaries=["clion", "clion-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="DataGrip",
                 icon=icons_dir / "datagrip.svg",
                 config_dir_prefixes=["JetBrains/DataGrip"],
                 binaries=["datagrip", "datagrip-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="DataSpell",
                 icon=icons_dir / "dataspell.svg",
                 config_dir_prefixes=["JetBrains/DataSpell"],
                 binaries=["dataspell", "dataspell-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="GoLand",
                 icon=icons_dir / "goland.svg",
                 config_dir_prefixes=["JetBrains/GoLand"],
                 binaries=["goland", "goland-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="IntelliJ IDEA",
                 icon=icons_dir / "idea.svg",
                 config_dir_prefixes=["JetBrains/IntelliJIdea", "JetBrains/Idea"],
                 binaries=["idea", "idea.sh", "idea-ultimate", "idea-ce-eap", "idea-ue-eap", "intellij-idea-ce",
                           "intellij-idea-ce-eap", "intellij-idea-ue-bundled-jre", "intellij-idea-ultimate-edition",
                           "intellij-idea-community-edition-jre", "intellij-idea-community-edition-no-jre"]),
-            Editor(
+            JetBrainsIde(
                 name="PhpStorm",
                 icon=icons_dir / "phpstorm.svg",
                 config_dir_prefixes=["JetBrains/PhpStorm"],
                 binaries=["phpstorm", "phpstorm-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="PyCharm",
                 icon=icons_dir / "pycharm.svg",
                 config_dir_prefixes=["JetBrains/PyCharm"],
                 binaries=["charm", "pycharm", "pycharm-eap", "pycharm-professional"]),
-            Editor(
+            Rider(
                 name="Rider",
                 icon=icons_dir / "rider.svg",
                 config_dir_prefixes=["JetBrains/Rider"],
-                binaries=["rider", "rider-eap"],
-                is_rider=True),
-            Editor(
+                binaries=["rider", "rider-eap"]),
+            JetBrainsIde(
                 name="RubyMine",
                 icon=icons_dir / "rubymine.svg",
                 config_dir_prefixes=["JetBrains/RubyMine"],
                 binaries=["rubymine", "rubymine-eap", "jetbrains-rubymine", "jetbrains-rubymine-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="RustRover",
                 icon=icons_dir / "rustrover.svg",
                 config_dir_prefixes=["JetBrains/RustRover"],
                 binaries=["rustrover", "rustrover-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="WebStorm",
                 icon=icons_dir / "webstorm.svg",
                 config_dir_prefixes=["JetBrains/WebStorm"],
                 binaries=["webstorm", "webstorm-eap"]),
-            Editor(
+            JetBrainsIde(
                 name="Writerside",
                 icon=icons_dir / "writerside.svg",
                 config_dir_prefixes=["JetBrains/Writerside"],
                 binaries=["writerside", "writerside-eap"]),
         ]
         return [e for e in editors if e.binary is not None]
+
+
+class Rider(JetBrainsIde):
+
+    def _get_recent_projects_entries(self, config_dir: Path) -> list[ElementTree.Element]:
+        # Rider calls recentProjects.xml -> recentSolutions.xml and
+        # in it RecentProjectsManager -> RiderRecentProjectsManager
+        recent_projects_file = Path(config_dir) / "options" / "recentSolutions.xml"
+        root = ElementTree.parse(recent_projects_file).getroot()
+        return root.findall(".//component[@name='RiderRecentProjectsManager']//entry[@key]")
 
 
 class Plugin(PluginInstance, GeneratorQueryHandler):
@@ -207,7 +195,7 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
         if self._match_path is None:
             self._match_path = False
 
-        self.editors = Editor.get_editors(Path(__file__).parent / "icons")
+        self.editors = JetBrainsIde.get_editors(Path(__file__).parent / "icons")
 
     @property
     def match_path(self):

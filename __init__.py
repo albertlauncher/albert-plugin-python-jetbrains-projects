@@ -215,25 +215,27 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
     def defaultTrigger(self):
         return "jb "
 
+    def _get_projects(self):
+        return [
+            project
+            for editor in self.editors
+            for project in editor.list_projects()
+            if Path(project.path).exists()
+        ]
+
     def items(self, ctx):
         editor_project_pairs = []
 
-        m = Matcher(ctx.query, MatchConfig(fuzzy=self.fuzzy))
-
-        for editor in self.editors:
-            for project in editor.list_projects():
-                if Path(project.path).exists():
-                    if self._match_path:
-                        if m.match(project.name, project.path):
-                            editor_project_pairs.append((editor, project))
-                    else:
-                        if m.match(project.name):
-                            editor_project_pairs.append((editor, project))
+        matcher = Matcher(ctx.query, MatchConfig(fuzzy=self.fuzzy))
+        matches = [
+            project for project in self._get_projects()
+            if matcher.match(*[project.name, project.path] if self._match_path else [project.name])
+        ]
 
         # sort by last opened
-        editor_project_pairs.sort(key=lambda pair: pair[1].last_opened, reverse=True)
+        matches.sort(key=lambda p: p.last_opened, reverse=True)
 
-        yield [self._make_item(editor, project) for editor, project in editor_project_pairs]
+        yield [self._make_item(project) for project in matches]
 
     @staticmethod
     def _make_item(editor: Editor, project: Project) -> Item:

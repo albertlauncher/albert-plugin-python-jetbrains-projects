@@ -112,6 +112,86 @@ class Editor:
         except (ElementTree.ParseError, FileNotFoundError):
             return []
 
+    @staticmethod
+    def get_editors(icons_dir: Path) -> List[Editor]:
+        editors = [
+            Editor(
+                name="Android Studio",
+                icon=icons_dir / "androidstudio.svg",
+                config_dir_prefixes=["Google/AndroidStudio"],
+                binaries=["studio", "androidstudio", "android-studio", "android-studio-canary", "jdk-android-studio",
+                          "android-studio-system-jdk"]),
+            Editor(
+                name="Aqua",
+                icon=icons_dir / "aqua.svg",
+                config_dir_prefixes=["JetBrains/Aqua"],
+                binaries=["aqua", "aqua-eap"]),
+            Editor(
+                name="CLion",
+                icon=icons_dir / "clion.svg",
+                config_dir_prefixes=["JetBrains/CLion"],
+                binaries=["clion", "clion-eap"]),
+            Editor(
+                name="DataGrip",
+                icon=icons_dir / "datagrip.svg",
+                config_dir_prefixes=["JetBrains/DataGrip"],
+                binaries=["datagrip", "datagrip-eap"]),
+            Editor(
+                name="DataSpell",
+                icon=icons_dir / "dataspell.svg",
+                config_dir_prefixes=["JetBrains/DataSpell"],
+                binaries=["dataspell", "dataspell-eap"]),
+            Editor(
+                name="GoLand",
+                icon=icons_dir / "goland.svg",
+                config_dir_prefixes=["JetBrains/GoLand"],
+                binaries=["goland", "goland-eap"]),
+            Editor(
+                name="IntelliJ IDEA",
+                icon=icons_dir / "idea.svg",
+                config_dir_prefixes=["JetBrains/IntelliJIdea", "JetBrains/Idea"],
+                binaries=["idea", "idea.sh", "idea-ultimate", "idea-ce-eap", "idea-ue-eap", "intellij-idea-ce",
+                          "intellij-idea-ce-eap", "intellij-idea-ue-bundled-jre", "intellij-idea-ultimate-edition",
+                          "intellij-idea-community-edition-jre", "intellij-idea-community-edition-no-jre"]),
+            Editor(
+                name="PhpStorm",
+                icon=icons_dir / "phpstorm.svg",
+                config_dir_prefixes=["JetBrains/PhpStorm"],
+                binaries=["phpstorm", "phpstorm-eap"]),
+            Editor(
+                name="PyCharm",
+                icon=icons_dir / "pycharm.svg",
+                config_dir_prefixes=["JetBrains/PyCharm"],
+                binaries=["charm", "pycharm", "pycharm-eap", "pycharm-professional"]),
+            Editor(
+                name="Rider",
+                icon=icons_dir / "rider.svg",
+                config_dir_prefixes=["JetBrains/Rider"],
+                binaries=["rider", "rider-eap"],
+                is_rider=True),
+            Editor(
+                name="RubyMine",
+                icon=icons_dir / "rubymine.svg",
+                config_dir_prefixes=["JetBrains/RubyMine"],
+                binaries=["rubymine", "rubymine-eap", "jetbrains-rubymine", "jetbrains-rubymine-eap"]),
+            Editor(
+                name="RustRover",
+                icon=icons_dir / "rustrover.svg",
+                config_dir_prefixes=["JetBrains/RustRover"],
+                binaries=["rustrover", "rustrover-eap"]),
+            Editor(
+                name="WebStorm",
+                icon=icons_dir / "webstorm.svg",
+                config_dir_prefixes=["JetBrains/WebStorm"],
+                binaries=["webstorm", "webstorm-eap"]),
+            Editor(
+                name="Writerside",
+                icon=icons_dir / "writerside.svg",
+                config_dir_prefixes=["JetBrains/Writerside"],
+                binaries=["writerside", "writerside-eap"]),
+        ]
+        return [e for e in editors if e.binary is not None]
+
 
 class Plugin(PluginInstance, GeneratorQueryHandler):
 
@@ -127,84 +207,7 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
         if self._match_path is None:
             self._match_path = False
 
-        plugin_dir = Path(__file__).parent
-        editors = [
-            Editor(
-                name="Android Studio",
-                icon=plugin_dir / "icons" / "androidstudio.svg",
-                config_dir_prefixes=["Google/AndroidStudio"],
-                binaries=["studio", "androidstudio", "android-studio", "android-studio-canary", "jdk-android-studio",
-                          "android-studio-system-jdk"]),
-            Editor(
-                name="Aqua",
-                icon=plugin_dir / "icons" / "aqua.svg",
-                config_dir_prefixes=["JetBrains/Aqua"],
-                binaries=["aqua", "aqua-eap"]),
-            Editor(
-                name="CLion",
-                icon=plugin_dir / "icons" / "clion.svg",
-                config_dir_prefixes=["JetBrains/CLion"],
-                binaries=["clion", "clion-eap"]),
-            Editor(
-                name="DataGrip",
-                icon=plugin_dir / "icons" / "datagrip.svg",
-                config_dir_prefixes=["JetBrains/DataGrip"],
-                binaries=["datagrip", "datagrip-eap"]),
-            Editor(
-                name="DataSpell",
-                icon=plugin_dir / "icons" / "dataspell.svg",
-                config_dir_prefixes=["JetBrains/DataSpell"],
-                binaries=["dataspell", "dataspell-eap"]),
-            Editor(
-                name="GoLand",
-                icon=plugin_dir / "icons" / "goland.svg",
-                config_dir_prefixes=["JetBrains/GoLand"],
-                binaries=["goland", "goland-eap"]),
-            Editor(
-                name="IntelliJ IDEA",
-                icon=plugin_dir / "icons" / "idea.svg",
-                config_dir_prefixes=["JetBrains/IntelliJIdea", "JetBrains/Idea"],
-                binaries=["idea", "idea.sh", "idea-ultimate", "idea-ce-eap", "idea-ue-eap", "intellij-idea-ce",
-                          "intellij-idea-ce-eap", "intellij-idea-ue-bundled-jre", "intellij-idea-ultimate-edition",
-                          "intellij-idea-community-edition-jre", "intellij-idea-community-edition-no-jre"]),
-            Editor(
-                name="PhpStorm",
-                icon=plugin_dir / "icons" / "phpstorm.svg",
-                config_dir_prefixes=["JetBrains/PhpStorm"],
-                binaries=["phpstorm", "phpstorm-eap"]),
-            Editor(
-                name="PyCharm",
-                icon=plugin_dir / "icons" / "pycharm.svg",
-                config_dir_prefixes=["JetBrains/PyCharm"],
-                binaries=["charm", "pycharm", "pycharm-eap", "pycharm-professional"]),
-            Editor(
-                name="Rider",
-                icon=plugin_dir / "icons" / "rider.svg",
-                config_dir_prefixes=["JetBrains/Rider"],
-                binaries=["rider", "rider-eap"],
-                is_rider=True),
-            Editor(
-                name="RubyMine",
-                icon=plugin_dir / "icons" / "rubymine.svg",
-                config_dir_prefixes=["JetBrains/RubyMine"],
-                binaries=["rubymine", "rubymine-eap", "jetbrains-rubymine", "jetbrains-rubymine-eap"]),
-            Editor(
-                name="RustRover",
-                icon=plugin_dir / "icons" / "rustrover.svg",
-                config_dir_prefixes=["JetBrains/RustRover"],
-                binaries=["rustrover", "rustrover-eap"]),
-            Editor(
-                name="WebStorm",
-                icon=plugin_dir / "icons" / "webstorm.svg",
-                config_dir_prefixes=["JetBrains/WebStorm"],
-                binaries=["webstorm", "webstorm-eap"]),
-            Editor(
-                name="Writerside",
-                icon=plugin_dir / "icons" / "writerside.svg",
-                config_dir_prefixes=["JetBrains/Writerside"],
-                binaries=["writerside", "writerside-eap"]),
-        ]
-        self.editors = [e for e in editors if e.binary is not None]
+        self.editors = Editor.get_editors(Path(__file__).parent / "icons")
 
     @property
     def match_path(self):

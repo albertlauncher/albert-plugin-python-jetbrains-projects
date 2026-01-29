@@ -2,8 +2,7 @@
 
 ## Features
 
-* Search and open projects of the Jetbrains IDEs.
-* Supported IDEs:
+* Search and open projects of the Jetbrains IDEs:
   * Android Studio
   * Aqua
   * CLion
@@ -18,8 +17,12 @@
   * RustRover
   * WebStorm
   * Writerside.
-* The projects are sorted by recency.
-* Optionally match the project path in addition to the project name. 
+* Global queries
+  * Match cached projects by name
+* Triggered queries 
+  * List projects ordered by recency
+  * Update the projects cache if older than one minute
+  * Optionally match the project path in addition to the project name
 
 # Setup
 

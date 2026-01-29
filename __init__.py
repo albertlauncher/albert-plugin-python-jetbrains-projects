@@ -5,6 +5,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
+from time import time
 from typing import Union, List
 from shutil import which
 from sys import platform
@@ -193,7 +194,9 @@ class Plugin(PluginInstance, GlobalQueryHandler):
             self._match_path = False
         self.fuzzy = False
         self.editors = JetBrainsIde.get_editors(Path(__file__).parent / "icons")
-        self.projects = self._get_projects()
+        self.projects = []
+        self.last_projects_update = 0
+        self._update_projects()
 
     @property
     def match_path(self):
@@ -213,16 +216,20 @@ class Plugin(PluginInstance, GlobalQueryHandler):
     def defaultTrigger(self):
         return "jb "
 
-    def _get_projects(self):
-        return [
-            project
-            for editor in self.editors
-            for project in editor.list_projects()
-            if Path(project.path).exists()
-        ]
+    def _update_projects(self):
+        now = time()
+        if now - self.last_projects_update > 60:
+            self.last_projects_update = now
+            self.projects = [
+                project
+                for editor in self.editors
+                for project in editor.list_projects()
+                if Path(project.path).exists()
+            ]
+            self.last_projects_update = now
 
     def items(self, ctx):
-        self.projects = self._get_projects()
+        self._update_projects()
 
         matcher = Matcher(ctx.query, MatchConfig(fuzzy=self.fuzzy))
         matches = [

@@ -28,7 +28,7 @@ class Project:
     name: str
     path: str
     last_opened: int
-    ide: JetBrainsIde
+    ide: "JetBrainsIde"
 
 
 class JetBrainsIde:
@@ -93,7 +93,7 @@ class JetBrainsIde:
         return []
 
     @staticmethod
-    def get_editors(icons_dir: Path) -> List[JetBrainsIde]:
+    def get_editors(icons_dir: Path) -> List["JetBrainsIde"]:
         editors = [
             JetBrainsIde(
                 name="Android Studio",

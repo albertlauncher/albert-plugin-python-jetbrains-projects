@@ -23,14 +23,6 @@ md_authors = ["@tomsquest", "@vmaerten", "@ManuelSchneid3r", "@d3v2a"]
 md_maintainers = ["@tomsquest", "@vmaerten", "@albi005"]
 
 
-@dataclass
-class Project:
-    name: str
-    path: str
-    last_opened: int
-    ide: JetBrainsIde
-
-
 class JetBrainsIde:
     name: str
     icon: Path
@@ -92,84 +84,92 @@ class JetBrainsIde:
                     return []
         return []
 
-    @staticmethod
-    def get_editors(icons_dir: Path) -> List[JetBrainsIde]:
-        editors = [
-            JetBrainsIde(
-                name="Android Studio",
-                icon=icons_dir / "androidstudio.svg",
-                config_dir_prefixes=["Google/AndroidStudio"],
-                binaries=["studio", "androidstudio", "android-studio", "android-studio-canary", "jdk-android-studio",
-                          "android-studio-system-jdk"]),
-            JetBrainsIde(
-                name="Aqua",
-                icon=icons_dir / "aqua.svg",
-                config_dir_prefixes=["JetBrains/Aqua"],
-                binaries=["aqua", "aqua-eap"]),
-            JetBrainsIde(
-                name="CLion",
-                icon=icons_dir / "clion.svg",
-                config_dir_prefixes=["JetBrains/CLion"],
-                binaries=["clion", "clion-eap"]),
-            JetBrainsIde(
-                name="DataGrip",
-                icon=icons_dir / "datagrip.svg",
-                config_dir_prefixes=["JetBrains/DataGrip"],
-                binaries=["datagrip", "datagrip-eap"]),
-            JetBrainsIde(
-                name="DataSpell",
-                icon=icons_dir / "dataspell.svg",
-                config_dir_prefixes=["JetBrains/DataSpell"],
-                binaries=["dataspell", "dataspell-eap"]),
-            JetBrainsIde(
-                name="GoLand",
-                icon=icons_dir / "goland.svg",
-                config_dir_prefixes=["JetBrains/GoLand"],
-                binaries=["goland", "goland-eap"]),
-            JetBrainsIde(
-                name="IntelliJ IDEA",
-                icon=icons_dir / "idea.svg",
-                config_dir_prefixes=["JetBrains/IntelliJIdea", "JetBrains/Idea"],
-                binaries=["idea", "idea.sh", "idea-ultimate", "idea-ce-eap", "idea-ue-eap", "intellij-idea-ce",
-                          "intellij-idea-ce-eap", "intellij-idea-ue-bundled-jre", "intellij-idea-ultimate-edition",
-                          "intellij-idea-community-edition-jre", "intellij-idea-community-edition-no-jre"]),
-            JetBrainsIde(
-                name="PhpStorm",
-                icon=icons_dir / "phpstorm.svg",
-                config_dir_prefixes=["JetBrains/PhpStorm"],
-                binaries=["phpstorm", "phpstorm-eap"]),
-            JetBrainsIde(
-                name="PyCharm",
-                icon=icons_dir / "pycharm.svg",
-                config_dir_prefixes=["JetBrains/PyCharm"],
-                binaries=["charm", "pycharm", "pycharm-eap", "pycharm-professional"]),
-            Rider(
-                name="Rider",
-                icon=icons_dir / "rider.svg",
-                config_dir_prefixes=["JetBrains/Rider"],
-                binaries=["rider", "rider-eap"]),
-            JetBrainsIde(
-                name="RubyMine",
-                icon=icons_dir / "rubymine.svg",
-                config_dir_prefixes=["JetBrains/RubyMine"],
-                binaries=["rubymine", "rubymine-eap", "jetbrains-rubymine", "jetbrains-rubymine-eap"]),
-            JetBrainsIde(
-                name="RustRover",
-                icon=icons_dir / "rustrover.svg",
-                config_dir_prefixes=["JetBrains/RustRover"],
-                binaries=["rustrover", "rustrover-eap"]),
-            JetBrainsIde(
-                name="WebStorm",
-                icon=icons_dir / "webstorm.svg",
-                config_dir_prefixes=["JetBrains/WebStorm"],
-                binaries=["webstorm", "webstorm-eap"]),
-            JetBrainsIde(
-                name="Writerside",
-                icon=icons_dir / "writerside.svg",
-                config_dir_prefixes=["JetBrains/Writerside"],
-                binaries=["writerside", "writerside-eap"]),
-        ]
-        return [e for e in editors if e.binary is not None]
+
+@dataclass
+class Project:
+    name: str
+    path: str
+    last_opened: int
+    ide: JetBrainsIde
+
+
+def editors(icons_dir: Path) -> List[JetBrainsIde]:
+    supported_editors = [
+        JetBrainsIde(
+            name="Android Studio",
+            icon=icons_dir / "androidstudio.svg",
+            config_dir_prefixes=["Google/AndroidStudio"],
+            binaries=["studio", "androidstudio", "android-studio", "android-studio-canary", "jdk-android-studio",
+                      "android-studio-system-jdk"]),
+        JetBrainsIde(
+            name="Aqua",
+            icon=icons_dir / "aqua.svg",
+            config_dir_prefixes=["JetBrains/Aqua"],
+            binaries=["aqua", "aqua-eap"]),
+        JetBrainsIde(
+            name="CLion",
+            icon=icons_dir / "clion.svg",
+            config_dir_prefixes=["JetBrains/CLion"],
+            binaries=["clion", "clion-eap"]),
+        JetBrainsIde(
+            name="DataGrip",
+            icon=icons_dir / "datagrip.svg",
+            config_dir_prefixes=["JetBrains/DataGrip"],
+            binaries=["datagrip", "datagrip-eap"]),
+        JetBrainsIde(
+            name="DataSpell",
+            icon=icons_dir / "dataspell.svg",
+            config_dir_prefixes=["JetBrains/DataSpell"],
+            binaries=["dataspell", "dataspell-eap"]),
+        JetBrainsIde(
+            name="GoLand",
+            icon=icons_dir / "goland.svg",
+            config_dir_prefixes=["JetBrains/GoLand"],
+            binaries=["goland", "goland-eap"]),
+        JetBrainsIde(
+            name="IntelliJ IDEA",
+            icon=icons_dir / "idea.svg",
+            config_dir_prefixes=["JetBrains/IntelliJIdea", "JetBrains/Idea"],
+            binaries=["idea", "idea.sh", "idea-ultimate", "idea-ce-eap", "idea-ue-eap", "intellij-idea-ce",
+                      "intellij-idea-ce-eap", "intellij-idea-ue-bundled-jre", "intellij-idea-ultimate-edition",
+                      "intellij-idea-community-edition-jre", "intellij-idea-community-edition-no-jre"]),
+        JetBrainsIde(
+            name="PhpStorm",
+            icon=icons_dir / "phpstorm.svg",
+            config_dir_prefixes=["JetBrains/PhpStorm"],
+            binaries=["phpstorm", "phpstorm-eap"]),
+        JetBrainsIde(
+            name="PyCharm",
+            icon=icons_dir / "pycharm.svg",
+            config_dir_prefixes=["JetBrains/PyCharm"],
+            binaries=["charm", "pycharm", "pycharm-eap", "pycharm-professional"]),
+        Rider(
+            name="Rider",
+            icon=icons_dir / "rider.svg",
+            config_dir_prefixes=["JetBrains/Rider"],
+            binaries=["rider", "rider-eap"]),
+        JetBrainsIde(
+            name="RubyMine",
+            icon=icons_dir / "rubymine.svg",
+            config_dir_prefixes=["JetBrains/RubyMine"],
+            binaries=["rubymine", "rubymine-eap", "jetbrains-rubymine", "jetbrains-rubymine-eap"]),
+        JetBrainsIde(
+            name="RustRover",
+            icon=icons_dir / "rustrover.svg",
+            config_dir_prefixes=["JetBrains/RustRover"],
+            binaries=["rustrover", "rustrover-eap"]),
+        JetBrainsIde(
+            name="WebStorm",
+            icon=icons_dir / "webstorm.svg",
+            config_dir_prefixes=["JetBrains/WebStorm"],
+            binaries=["webstorm", "webstorm-eap"]),
+        JetBrainsIde(
+            name="Writerside",
+            icon=icons_dir / "writerside.svg",
+            config_dir_prefixes=["JetBrains/Writerside"],
+            binaries=["writerside", "writerside-eap"]),
+    ]
+    return [e for e in supported_editors if e.binary is not None]
 
 
 class Rider(JetBrainsIde):
@@ -193,7 +193,7 @@ class Plugin(PluginInstance, GlobalQueryHandler):
         if self._match_path is None:
             self._match_path = False
         self.fuzzy = False
-        self.editors = JetBrainsIde.get_editors(Path(__file__).parent / "icons")
+        self.editors = editors(Path(__file__).parent / "icons")
         self.projects = []
         self.last_projects_update = 0
         self._update_projects()

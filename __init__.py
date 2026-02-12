@@ -3,7 +3,6 @@
 # Copyright (c) 2018-2023 Thomas Queste
 # Copyright (c) 2023 Valentin Maerten
 
-from dataclasses import dataclass
 from pathlib import Path
 from time import time
 from typing import Union, List
@@ -21,6 +20,14 @@ md_url = "https://github.com/albertlauncher/albert-plugin-python-jetbrains-proje
 md_readme_url = "https://github.com/albertlauncher/albert-plugin-python-jetbrains-projects/blob/main/README.md"
 md_authors = ["@tomsquest", "@vmaerten", "@ManuelSchneid3r", "@d3v2a"]
 md_maintainers = ["@tomsquest", "@vmaerten", "@albi005"]
+
+
+class Project:
+    def __init__(self, name: str, path: str, last_opened: int, ide: 'JetBrainsIde'):
+        self.name = name
+        self.path = path
+        self.last_opened = last_opened
+        self.ide = ide
 
 
 class JetBrainsIde:
@@ -84,13 +91,6 @@ class JetBrainsIde:
                     return []
         return []
 
-
-@dataclass
-class Project:
-    name: str
-    path: str
-    last_opened: int
-    ide: JetBrainsIde
 
 
 def editors(icons_dir: Path) -> List[JetBrainsIde]:

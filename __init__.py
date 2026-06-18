@@ -12,7 +12,7 @@ from sys import platform
 from xml.etree import ElementTree
 from albert import *
 
-md_iid = "5.0"
+md_iid = "6.0"
 md_version = "4.4.1"
 md_name = "Jetbrains projects"
 md_description = "Open your JetBrains projects"
